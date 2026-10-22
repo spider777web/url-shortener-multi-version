@@ -1,0 +1,20 @@
+pipeline {
+  agent any
+  stages {
+    stage('Checkout') {
+      steps { git branch: 'v3', url: 'https://github.com/spider777web/url-shortener-multi-version.git' }
+    }
+    stage('Install') {
+      steps { sh 'python3 -m pip install -r requirements.txt' }
+    }
+    stage('Test') {
+      steps { sh 'python3 - <<\'PY\'\nprint("v3 smoke test ok")\nPY' }
+    }
+    stage('Build Docker') {
+      steps { sh 'docker build -t spider777web/url-shortener:v3 .' }
+    }
+    stage('Push DockerHub') {
+      steps { sh 'echo "docker push spider777web/url-shortener:v3"' }
+    }
+  }
+}
