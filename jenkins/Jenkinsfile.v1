@@ -1,7 +1,38 @@
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-EXPOSE 5000
-CMD ["python", "app.py"]
+﻿pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'v1', url: 'https://github.com/spider777web/url-shortener-multi-version.git'
+            }
+        }
+
+        stage('Install') {
+            steps {
+                bat 'python3 -m pip install -r requirements.txt'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                bat 'python3 -c "import flask; print(\"v1 smoke test passed\")"'
+            }
+        }
+
+        stage('Build Docker') {
+            steps {
+                bat 'docker build --build-arg APP_VERSION=v1 -t spider777web/url-shortener:v1 .'
+            }
+        }
+
+        stage('Push DockerHub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    bat 'echo "" | docker login -u "" --password-stdin'
+                    bat 'docker push spider777web/url-shortener:v1'
+                }
+            }
+        }
+    }
+}
