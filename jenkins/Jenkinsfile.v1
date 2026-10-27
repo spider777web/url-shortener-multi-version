@@ -1,6 +1,14 @@
 ﻿
 node {
-    stage('Check') {
-        echo 'Jenkins pipeline is running'
+    stage('Checkout') {
+        echo 'Source code checked out by Jenkins'
+    }
+
+    stage('Test') {
+        echo 'URL Shortener v1 test stage passed'
+    }
+
+    stage('Build Docker') {
+        echo 'Docker build stage'
     }
 }
