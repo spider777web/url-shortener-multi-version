@@ -1,38 +1,19 @@
-﻿pipeline {
-    agent any
+﻿
+node {
+    stage('Checkout') {
+        checkout scm
+    }
 
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'v1', url: 'https://github.com/spider777web/url-shortener-multi-version.git'
-            }
-        }
+    stage('Check Python') {
+        bat 'python --version'
+        bat 'python -m pip --version'
+    }
 
-        stage('Install') {
-            steps {
-                bat 'python3 -m pip install -r requirements.txt'
-            }
-        }
+    stage('Test') {
+        bat 'python -c "import ast; ast.parse(open(\'v1/app.py\').read()); print(\'v1 syntax test passed\')"'
+    }
 
-        stage('Test') {
-            steps {
-                bat 'python3 -c "import flask; print(\"v1 smoke test passed\")"'
-            }
-        }
-
-        stage('Build Docker') {
-            steps {
-                bat 'docker build --build-arg APP_VERSION=v1 -t spider777web/url-shortener:v1 .'
-            }
-        }
-
-        stage('Push DockerHub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    bat 'echo "" | docker login -u "" --password-stdin'
-                    bat 'docker push spider777web/url-shortener:v1'
-                }
-            }
-        }
+    stage('Build Docker') {
+        bat 'docker build --build-arg APP_VERSION=v1 -t spider777web/url-shortener:v1 .'
     }
 }
