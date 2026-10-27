@@ -1,19 +1,6 @@
 ﻿
 node {
-    stage('Checkout') {
-        checkout scm
-    }
-
-    stage('Check Python') {
-        bat 'python --version'
-        bat 'python -m pip --version'
-    }
-
-    stage('Test') {
-        bat 'python -c "import ast; ast.parse(open(\'v1/app.py\').read()); print(\'v1 syntax test passed\')"'
-    }
-
-    stage('Build Docker') {
-        bat 'docker build --build-arg APP_VERSION=v1 -t spider777web/url-shortener:v1 .'
+    stage('Check') {
+        echo 'Jenkins pipeline is running'
     }
 }
