@@ -1,14 +1,39 @@
 ﻿
-node {
-    stage('Checkout') {
-        echo 'Source code checked out by Jenkins'
-    }
+pipeline {
+    agent any
 
-    stage('Test') {
-        echo 'URL Shortener v1 test stage passed'
-    }
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'v1', url: 'https://github.com/spider777web/url-shortener-multi-version.git'
+            }
+        }
 
-    stage('Build Docker') {
-        echo 'Docker build stage'
+        stage('Install') {
+            steps {
+                bat 'python -m pip install -r requirements.txt'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                bat 'python -c "import flask; print(\'v1 smoke test passed\')"'
+            }
+        }
+
+        stage('Build Docker') {
+            steps {
+                bat 'docker build --build-arg APP_VERSION=v1 -t spider777web/url-shortener:v1 .'
+            }
+        }
+
+        stage('Push DockerHub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
+                    bat 'docker push spider777web/url-shortener:v1'
+                }
+            }
+        }
     }
 }
